@@ -48,4 +48,10 @@ Using Screen can be useful for this.
 The Airflow webserver can now be accessed over the server IP (see 
 `gcloud compute instances list` to see currently allocaed IPs).
 
+### Cleanup
+Run `./bin/tear_down` to clean up the project. This will delete the server, the firewall rules and the two BigQuery
+datasets.
+
 ### Comments
+I could run the dag ok over the command line, but had some issues running it through the webserver. Discuss/elaborate
+later.

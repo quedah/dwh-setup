@@ -62,6 +62,7 @@ export AIRFLOW_PW="${AIRFLOW_PW}"
 EOL
 
 upload_keyfile() {
+  # Sleep is necessary here as it takes some time before we can SSH into server.
   sleep 30
   gcloud compute scp ${DWH_KEYFILE} ${DWH_USER}@${DWH_SERVER_NAME}:keyfile.json
   gcloud compute scp  ../configs/nginx.conf ${DWH_USER}@${DWH_SERVER_NAME}:nginx.conf
@@ -70,6 +71,7 @@ upload_keyfile() {
   rm env.sh
 }
 # Move sensitive files to remote with retry if server is not ready yet.
+# Rerun command if it fails at first.
 upload_keyfile  || upload_keyfile || upload_keyfile
 
 # Create BQ datasets

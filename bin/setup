@@ -1,13 +1,5 @@
 #!/bin/bash
 
-# Requirements:
-# - gcloud (check version)
-# - bq (check version, part of gcloud?)
-# - gsutil (check version, part of gcloud?)
-
-# Other env vars:
-# - gcp bucket name
-# - ...
 
 # Required env. variables:
 # - DWH_USER
@@ -17,15 +9,6 @@
 # - BQ_STAGING_DATASET
 # - BQ_DWH_DATASET
 
-# Read config values from env. variables
-server_name="airflow-server"
-user="airflow"
-service_account="dwh-case@edward-303907.iam.gserviceaccount.com"
-
-zone="europe-west1-b"
-staging_dataset="staging"
-dwh_dataset="dwh"
-key_file="/Users/edwarddin/.gcp_keys/edward-303907-e7f16475db73.json"
 
 # Check necessary variables are set.
 if [ -z ${DWH_USER} ]; then 

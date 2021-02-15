@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
 source env.sh
 
 DWH_USER=$USER

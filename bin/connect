@@ -1,0 +1,11 @@
+#!/bin/bash
+if [ -z ${DWH_USER} ]; then 
+  echo "DWH_USER variable not set.";
+  exit 1
+elif [ -z ${DWH_SERVER_NAME} ]; then
+  echo "DWH_SERVER_NAME variable not set.";
+  exit 1
+else
+  gcloud compute ssh ${DWH_USER}@${DWH_SERVER_NAME}
+fi
+

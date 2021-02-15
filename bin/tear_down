@@ -1,0 +1,28 @@
+#!/bin/bash
+
+
+# Check necessary variables are set.
+if [ -z ${DWH_SERVER_NAME} ]; then
+  echo "DWH_SERVER_NAME variable not set.";
+  exit 1
+elif [ -z ${DWH_SERVER_ZONE} ]; then
+  echo "DWH_SERVER_ZONE variable not set.";
+  exit 1
+elif [ -z ${BQ_STAGING_DATASET} ]; then
+  echo "BQ_STAGING_DATASET variable not set.";
+  exit 1
+elif [ -z ${BQ_DWH_DATASET} ]; then
+  echo "BQ_DWH_DATASET variable not set.";
+  exit 1
+fi
+
+
+gcloud compute firewall-rules delete -q http-firewall 
+gcloud compute instances stop --zone ${DWH_SERVER_ZONE} ${DWH_SERVER_NAME}
+gcloud compute instances delete -q --delete-disks all --zone ${DWH_SERVER_ZONE} ${DWH_SERVER_NAME}
+
+# Remove BQ datasets
+bq rm -r -f ${BQ_STAGING_DATASET}
+bq rm -r -f ${BQ_DWH_DATASET}
+
+

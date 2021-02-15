@@ -1,0 +1,96 @@
+#!/bin/bash
+
+# Requirements:
+# - gcloud (check version)
+# - bq (check version, part of gcloud?)
+# - gsutil (check version, part of gcloud?)
+
+# Other env vars:
+# - gcp bucket name
+# - ...
+
+# Required env. variables:
+# - DWH_USER
+# - DWH_SERVER_NAME
+# - DWH_SERVICE_ACCOUNT
+# - DWH_SERVER_ZONE
+# - BQ_STAGING_DATASET
+# - BQ_DWH_DATASET
+
+# Read config values from env. variables
+server_name="airflow-server"
+user="airflow"
+service_account="dwh-case@edward-303907.iam.gserviceaccount.com"
+
+zone="europe-west1-b"
+staging_dataset="staging"
+dwh_dataset="dwh"
+key_file="/Users/edwarddin/.gcp_keys/edward-303907-e7f16475db73.json"
+
+# Check necessary variables are set.
+if [ -z ${DWH_USER} ]; then 
+  echo "DWH_USER variable not set.";
+  exit 1
+elif [ -z ${DWH_SERVER_NAME} ]; then
+  echo "DWH_SERVER_NAME variable not set.";
+  exit 1
+elif [ -z ${DWH_SERVICE_ACCOUNT} ]; then
+  echo "DWH_SERVICE_ACCOUNT variable not set.";
+  exit 1
+elif [ -z ${DWH_SERVER_ZONE} ]; then
+  echo "DWH_SERVER_ZONE variable not set.";
+  exit 1
+elif [ -z ${DWH_KEYFILE} ]; then
+  echo "DWH_KEYFILE variable not set.";
+  exit 1
+elif [ -z ${BQ_STAGING_DATASET} ]; then
+  echo "BQ_STAGING_DATASET variable not set.";
+  exit 1
+elif [ -z ${BQ_DWH_DATASET} ]; then
+  echo "BQ_DWH_DATASET variable not set.";
+  exit 1
+elif [ -z ${AIRFLOW_USERNAME} ]; then
+  echo "BQ_DWH_DATASET variable not set.";
+  exit 1
+elif [ -z ${AIRFLOW_PW} ]; then
+  echo "BQ_DWH_DATASET variable not set.";
+  exit 1
+fi
+
+# Create GCP compute instance for running airflow.
+gcloud compute instances create ${DWH_SERVER_NAME} \
+  --zone ${DWH_SERVER_ZONE}\
+  --image ubuntu-2004-focal-v20210129\
+  --image-project ubuntu-os-cloud\
+  --tags http-server,airflow\
+  --service-account ${DWH_SERVICE_ACCOUNT}
+  #--metadata-from-file startup-script=../scripts/remote_setup.sh \
+
+
+# Allowing http traffic to instance for access to airflow webinterface. 
+# I would normally do additional work here (e.g. implement access over https 
+# only, restrict access to certain IP range only, etc.)
+gcloud compute firewall-rules create http-firewall --allow tcp:80,tcp:443 --target-tags http-server
+
+# Write remote required values to env
+cat > env.sh <<EOL
+export AIRFLOW_USERNAME="${AIRFLOW_USERNAME}"
+export AIRFLOW_PW="${AIRFLOW_PW}"
+EOL
+
+upload_keyfile() {
+  sleep 30
+  gcloud compute scp ${DWH_KEYFILE} ${DWH_USER}@${DWH_SERVER_NAME}:keyfile.json
+  gcloud compute scp  ../configs/nginx.conf ${DWH_USER}@${DWH_SERVER_NAME}:nginx.conf
+  gcloud compute scp  ../scripts/remote_setup.sh ${DWH_USER}@${DWH_SERVER_NAME}:
+  gcloud compute scp  env.sh ${DWH_USER}@${DWH_SERVER_NAME}:
+  rm env.sh
+}
+# Move sensitive files to remote with retry if server is not ready yet.
+upload_keyfile  || upload_keyfile || upload_keyfile
+
+# Create BQ datasets
+bq mk ${BQ_STAGING_DATASET}
+bq mk ${BQ_DWH_DATASET}
+
+gcloud compute ssh --zone ${DWH_SERVER_ZONE} ${DWH_USER}@${DWH_SERVER_NAME} < ../scripts/remote_setup.sh

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+bucket="gs://56k-dwh-case"
+# Parse and deploy mapping 
+declare -a txt_file_names=("i94addrl" "i94cntyl" "i94model" "i94prtl" "I94VISA")
+cd ..
+for fname in "${txt_file_names[@]}"
+do
+  in_fname="./mappings/${fname}.txt"
+  out_fname="./mappings/${fname}.csv"
+
+  # Parse file to csv
+  sed -E "s/[ ]*=[ ]*/,/g;  s/\'//g"  $in_fname | awk '{$1=$1;print}' > $out_fname
+
+  # Copy to bucket
+  gsutil cp $out_fname "${bucket}/mappings/"
+
+  # Clear up
+  rm $out_fname
+done
+
+declare -a csv_file_names=("airport-codes.csv" "us-cities-demographics.csv" )
+for fname in "${csv_file_names[@]}"
+do
+  # Copy to bucket
+  gsutil cp "./mappings/$fname" "${bucket}"
+done
+
+gsutil cp ./mappings/i94res.csv "${bucket}/dimensions/"
+gsutil cp ./data/GlobalLandTemperaturesByCity.csv "${bucket}/data/"
+gsutil cp ./data/*.parquet "${bucket}/data/"
+
+

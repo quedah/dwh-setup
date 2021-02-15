@@ -2,6 +2,7 @@
 ### Project Summary
 This project is an exercise to create a datawarehouse on GCP along the lines of 
 this [article](https://towardsdatascience.com/build-your-first-data-warehouse-with-airflow-on-gcp-fdd0c0ad91bb). 
+You can find the GDS dashboard showcasing some of the data [here](https://datastudio.google.com/reporting/bb3d9eba-b104-4ecf-82ae-66f8c74de800).
 
 ### Requirements
 It is assumed that gcloud (see [here](https://cloud.google.com/sdk/gcloud)) is installed and the user 

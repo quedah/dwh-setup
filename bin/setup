@@ -78,4 +78,5 @@ upload_keyfile  || upload_keyfile || upload_keyfile
 bq mk ${BQ_STAGING_DATASET}
 bq mk ${BQ_DWH_DATASET}
 
+# Run remote_setup.sh script on server.
 gcloud compute ssh --zone ${DWH_SERVER_ZONE} ${DWH_USER}@${DWH_SERVER_NAME} < ../scripts/remote_setup.sh
